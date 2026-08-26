@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900">
+  <defs>
+    <linearGradient id="wallet" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8b3dff"/><stop offset="1" stop-color="#4b16c7"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffd83d"/><stop offset="1" stop-color="#f4a900"/></linearGradient>
+    <linearGradient id="halo" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff8b8"/><stop offset="1" stop-color="#ffe45b"/></linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-opacity=".22"/></filter>
+  </defs>
+
+  <rect width="1200" height="900" fill="#fff"/>
+  <circle cx="600" cy="300" r="235" fill="url(#halo)" opacity=".58"/>
+
+  <!-- growth arrow -->
+  <path d="M730 245 L810 175 L850 210 L930 125" fill="none" stroke="#ffc400" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M890 122 L950 105 L935 165" fill="#ffc400"/>
+
+  <!-- cards -->
+  <g transform="rotate(-10 540 245)" filter="url(#shadow)">
+    <rect x="450" y="125" width="155" height="230" rx="22" fill="#ffc928"/>
+    <rect x="478" y="165" width="75" height="14" rx="7" fill="#bd8b00" opacity=".8"/>
+  </g>
+  <g transform="rotate(14 700 240)" filter="url(#shadow)">
+    <rect x="640" y="125" width="150" height="220" rx="22" fill="#20ad70"/>
+    <circle cx="715" cy="245" r="35" fill="#16895a" opacity=".7"/>
+  </g>
+  <g transform="rotate(-15 610 245)" filter="url(#shadow)">
+    <rect x="535" y="115" width="165" height="235" rx="22" fill="#f7f7fb"/>
+    <rect x="560" y="155" width="65" height="12" rx="6" fill="#cfd0e7"/>
+    <rect x="570" y="260" width="20" height="55" rx="6" fill="#7040df"/>
+    <rect x="600" y="230" width="20" height="85" rx="6" fill="#f3b400"/>
+    <rect x="630" y="200" width="20" height="115" rx="6" fill="#7040df"/>
+  </g>
+
+  <!-- wallet -->
+  <g filter="url(#shadow)">
+    <path d="M390 300 Q390 275 420 265 L735 265 Q780 265 790 310 L810 490 Q815 555 755 570 L420 555 Q375 550 375 505 Z" fill="url(#wallet)"/>
+    <path d="M390 330 Q410 295 450 295 L755 295 Q795 295 795 335 L800 475 Q800 515 760 525 L425 515 Q390 510 390 475 Z" fill="none" stroke="#c58cff" stroke-width="7" stroke-dasharray="10 10" opacity=".7"/>
+    <path d="M700 390 H790 V485 H700 Q665 485 665 450 Q665 390 700 390Z" fill="#6b25df"/>
+    <circle cx="730" cy="437" r="18" fill="url(#gold)" stroke="#fff18a" stroke-width="4"/>
+  </g>
+
+  <!-- coins -->
+  <g filter="url(#shadow)">
+    <ellipse cx="410" cy="540" rx="72" ry="25" fill="#d99600"/>
+    <rect x="338" y="505" width="144" height="35" fill="url(#gold)"/>
+    <ellipse cx="410" cy="505" rx="72" ry="25" fill="#ffd43c"/>
+    <ellipse cx="410" cy="470" rx="72" ry="25" fill="#e7a700"/>
+    <rect x="338" y="435" width="144" height="35" fill="url(#gold)"/>
+    <ellipse cx="410" cy="435" rx="72" ry="25" fill="#ffd43c"/>
+    <circle cx="515" cy="495" r="66" fill="url(#gold)" stroke="#f9c21c" stroke-width="8"/>
+    <text x="515" y="520" text-anchor="middle" font-family="Arial,sans-serif" font-size="58" font-weight="700" fill="#fff">₹</text>
+  </g>
+
+  <!-- wordmark -->
+  <text x="145" y="700" font-family="Arial Rounded MT Bold, Arial, sans-serif" font-size="128" font-weight="800" letter-spacing="-5" fill="#15183f">Purse</text>
+  <text x="665" y="700" font-family="Arial Rounded MT Bold, Arial, sans-serif" font-size="128" font-weight="800" letter-spacing="-5" fill="#f4b400">folio</text>
+
+  <!-- stylized final o -->
+  <circle cx="1015" cy="658" r="49" fill="#f4b400"/>
+  <rect x="985" y="680" width="12" height="20" rx="3" fill="#fff"/>
+  <rect x="1002" y="666" width="12" height="34" rx="3" fill="#fff"/>
+  <rect x="1019" y="648" width="12" height="52" rx="3" fill="#fff"/>
+  <path d="M1010 610 Q1035 575 1060 605 Q1040 605 1028 620" fill="none" stroke="#f4b400" stroke-width="10" stroke-linecap="round"/>
+
+  <!-- tagline -->
+  <g font-family="Arial,sans-serif" font-size="25" font-weight="600" letter-spacing="14" fill="#20234d">
+    <text x="600" y="785" text-anchor="middle">TRACK • PLAN • GROW</text>
+  </g>
+  <rect x="140" y="772" width="105" height="7" rx="3.5" fill="#f4b400"/>
+  <rect x="955" y="772" width="105" height="7" rx="3.5" fill="#f4b400"/>
+</svg>
