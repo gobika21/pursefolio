@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
   deleteTransaction,
@@ -10,9 +9,12 @@ import {
 } from "../lib/api";
 import { formatDate } from "../lib/format";
 import { useCurrency } from "../lib/currency-context";
+import CategoryIcon from "../components/CategoryIcon";
+import { useAddTransaction } from "../lib/add-transaction-context";
 
 export default function TransactionsPage() {
   const { format } = useCurrency();
+  const { open, refreshKey } = useAddTransaction();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -29,7 +31,7 @@ export default function TransactionsPage() {
 
   useEffect(() => {
     load();
-  }, []);
+  }, [refreshKey]);
 
   const filtered = useMemo(() => {
     return [...transactions]
@@ -63,12 +65,12 @@ export default function TransactionsPage() {
             View and manage all your transactions
           </p>
         </div>
-        <Link
-          href="/expenses/transactions/add"
+        <button
+          onClick={open}
           className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-dark"
         >
           + Add Transaction
-        </Link>
+        </button>
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -106,8 +108,7 @@ export default function TransactionsPage() {
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead className="border-b border-gray-100 text-xs uppercase text-gray-500">
             <tr>
-              <th className="px-5 py-3">Date</th>
-              <th className="px-5 py-3">Description</th>
+              <th className="px-5 py-3">Transaction</th>
               <th className="px-5 py-3">Category</th>
               <th className="px-5 py-3">Type</th>
               <th className="px-5 py-3 text-right">Amount</th>
@@ -117,24 +118,27 @@ export default function TransactionsPage() {
           <tbody className="divide-y divide-gray-100">
             {loading ? (
               <tr>
-                <td colSpan={6} className="px-5 py-6 text-center text-gray-400">
+                <td colSpan={5} className="px-5 py-6 text-center text-gray-400">
                   Loading…
                 </td>
               </tr>
             ) : filtered.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-5 py-6 text-center text-gray-400">
+                <td colSpan={5} className="px-5 py-6 text-center text-gray-400">
                   No transactions found.
                 </td>
               </tr>
             ) : (
               filtered.map((t) => (
                 <tr key={t._id} className="hover:bg-gray-50">
-                  <td className="px-5 py-3 text-gray-500">
-                    {formatDate(t.date)}
-                  </td>
-                  <td className="px-5 py-3 font-medium text-gray-900">
-                    {t.title}
+                  <td className="px-5 py-3">
+                    <div className="flex items-center gap-3">
+                      <CategoryIcon category={t.category} type={t.type} size={36} />
+                      <div>
+                        <p className="font-medium text-gray-900">{t.title}</p>
+                        <p className="text-xs text-gray-500">{formatDate(t.date)}</p>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-5 py-3 text-gray-600">
                     {t.category || "Others"}

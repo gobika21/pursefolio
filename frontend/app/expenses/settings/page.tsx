@@ -1,6 +1,6 @@
 "use client";
 
-import { CURRENCIES, CurrencyCode } from "../../lib/currency";
+import { CURRENCIES, CurrencyCode, symbolForCurrency } from "../../lib/currency";
 import { useCurrency } from "../lib/currency-context";
 
 export default function SettingsPage() {
@@ -36,7 +36,7 @@ export default function SettingsPage() {
               >
                 {CURRENCIES.map((c) => (
                   <option key={c.code} value={c.code}>
-                    {c.label} — {c.country}
+                    {c.code} ({symbolForCurrency(c.code)}) — {c.name}, {c.country}
                   </option>
                 ))}
               </select>

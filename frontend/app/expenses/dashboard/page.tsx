@@ -3,13 +3,16 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import StatCard from "../components/StatCard";
+import CategoryIcon from "../components/CategoryIcon";
 import { fetchTransactions, Transaction } from "../lib/api";
 import { formatDate } from "../lib/format";
 import { colorForCategory } from "../lib/categories";
 import { useCurrency } from "../lib/currency-context";
+import { useAddTransaction } from "../lib/add-transaction-context";
 
 export default function DashboardPage() {
   const { format } = useCurrency();
+  const { open, refreshKey } = useAddTransaction();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -19,7 +22,7 @@ export default function DashboardPage() {
       .then(setTransactions)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [refreshKey]);
 
   const stats = useMemo(() => {
     const income = transactions
@@ -62,12 +65,12 @@ export default function DashboardPage() {
             Here&apos;s your financial overview
           </p>
         </div>
-        <Link
-          href="/expenses/transactions/add"
+        <button
+          onClick={open}
           className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-dark"
         >
           + Add Transaction
-        </Link>
+        </button>
       </div>
 
       {error && (
@@ -161,16 +164,7 @@ export default function DashboardPage() {
               {recent.map((t) => (
                 <li key={t._id} className="flex items-center justify-between py-3">
                   <div className="flex items-center gap-3">
-                    <span
-                      className="flex h-9 w-9 items-center justify-center rounded-full text-sm"
-                      style={{
-                        backgroundColor: colorForCategory(
-                          t.category || "Others",
-                        ),
-                      }}
-                    >
-                      {t.type === "income" ? "⬆️" : "🛒"}
-                    </span>
+                    <CategoryIcon category={t.category} type={t.type} size={36} />
                     <div>
                       <p className="text-sm font-medium text-gray-900">
                         {t.title}

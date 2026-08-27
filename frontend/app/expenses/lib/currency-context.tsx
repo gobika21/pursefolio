@@ -24,7 +24,7 @@ const CurrencyContext = createContext<CurrencyContextValue | null>(null);
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
   const [currency, setCurrencyState] = useState<CurrencyCode>(
-    () => getStoredCurrency() || "INR",
+    () => getStoredCurrency() || "USD",
   );
   const [saving, setSaving] = useState(false);
 

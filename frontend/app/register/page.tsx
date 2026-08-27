@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import AuthShell from "../components/AuthShell";
 import { saveSession } from "../lib/auth";
+import { CURRENCIES, CurrencyCode, symbolForCurrency } from "../lib/currency";
 
 const Register = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [currency, setCurrency] = useState<CurrencyCode>("USD");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -28,7 +30,7 @@ const Register = () => {
       const response = await fetch("/api/users/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, currency }),
       });
       const result = await response.json();
 
@@ -105,6 +107,30 @@ const Register = () => {
             required
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
+        </div>
+
+        <div>
+          <label
+            className="mb-1 block text-sm font-medium text-gray-700"
+            htmlFor="currency"
+          >
+            Preferred currency
+          </label>
+          <select
+            id="currency"
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
+            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent"
+          >
+            {CURRENCIES.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.code} ({symbolForCurrency(c.code)}) — {c.name}, {c.country}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-gray-400">
+            Used to format amounts across your dashboard — changeable later in Settings.
+          </p>
         </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}

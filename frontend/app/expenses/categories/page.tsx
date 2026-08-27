@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { fetchTransactions, Transaction } from "../lib/api";
-import { colorForCategory } from "../lib/categories";
 import { useCurrency } from "../lib/currency-context";
+import CategoryIcon from "../components/CategoryIcon";
 
 export default function CategoriesPage() {
   const { format } = useCurrency();
@@ -55,12 +55,7 @@ export default function CategoriesPage() {
               className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-black/5"
             >
               <div className="mb-3 flex items-center gap-3">
-                <span
-                  className="flex h-10 w-10 items-center justify-center rounded-full text-white"
-                  style={{ backgroundColor: colorForCategory(category) }}
-                >
-                  🏷️
-                </span>
+                <CategoryIcon category={category} size={40} />
                 <div>
                   <p className="font-semibold text-gray-900">{category}</p>
                   <p className="text-xs text-gray-500">{stat.count} transactions</p>

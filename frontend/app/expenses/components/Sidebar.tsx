@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { clearSession, getEmail } from "../../lib/auth";
+import { usePathname } from "next/navigation";
 import Logo from "../../components/Logo";
 import Wordmark from "../../components/Wordmark";
 
@@ -19,17 +17,6 @@ const NAV_ITEMS = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
-  const [email, setEmail] = useState<string | null>(null);
-
-  useEffect(() => {
-    setEmail(getEmail());
-  }, []);
-
-  function handleLogout() {
-    clearSession();
-    router.replace("/login");
-  }
 
   return (
     <aside className="flex h-screen w-64 shrink-0 flex-col bg-navy text-cream">
@@ -69,20 +56,6 @@ export default function Sidebar() {
         </button>
       </div>
       */}
-
-      <div className="flex items-center justify-between border-t border-white/10 px-4 py-4">
-        <div className="min-w-0">
-          <p className="truncate text-xs font-medium text-white">
-            {email || "Signed in"}
-          </p>
-        </div>
-        <button
-          onClick={handleLogout}
-          className="shrink-0 rounded-lg px-2 py-1 text-xs font-semibold text-cream-dark hover:bg-navy-dark hover:text-white"
-        >
-          Logout
-        </button>
-      </div>
     </aside>
   );
 }

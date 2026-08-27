@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const CURRENCIES = require("../lib/currencies");
 
 const userSchema = new mongoose.Schema({
   email: {
@@ -13,8 +14,14 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true, minlength: 8 },
   currency: {
     type: String,
-    enum: ["INR", "AED", "CAD"],
-    default: "INR",
+    enum: CURRENCIES,
+    default: "USD",
+  },
+  overallBudget: { type: Number, default: 0, min: 0 },
+  categoryBudgets: {
+    type: Map,
+    of: { type: Number, min: 0 },
+    default: {},
   },
 });
 

@@ -3,9 +3,9 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const requireAuth = require("../middleware/auth");
+const CURRENCIES = require("../lib/currencies");
 
 const router = express.Router();
-const CURRENCIES = ["INR", "AED", "CAD"];
 
 function issueToken(user) {
   return jwt.sign({ userId: user._id, email: user.email }, process.env.JWT_SECRET, {
@@ -16,7 +16,7 @@ function issueToken(user) {
 router.post("/register", async (req, res) => {
   try {
     const email = req.body.email?.trim().toLowerCase();
-    const { password } = req.body;
+    const { password, currency } = req.body;
 
     if (!email || !password) {
       return res
@@ -36,13 +36,21 @@ router.post("/register", async (req, res) => {
         .json({ message: "Password must be at least 8 characters" });
     }
 
+    if (currency && !CURRENCIES.includes(currency)) {
+      return res.status(400).json({ message: "Unsupported currency" });
+    }
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(409).json({ message: "Email already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({ email, password: hashedPassword });
+    const user = await User.create({
+      email,
+      password: hashedPassword,
+      ...(currency ? { currency } : {}),
+    });
 
     res.status(201).json({
       message: "Registration successful",
@@ -89,13 +97,22 @@ router.post("/login", async (req, res) => {
   }
 });
 
+function serializeUser(user) {
+  return {
+    email: user.email,
+    currency: user.currency,
+    overallBudget: user.overallBudget,
+    categoryBudgets: Object.fromEntries(user.categoryBudgets || []),
+  };
+}
+
 router.get("/me", requireAuth, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.json({ email: user.email, currency: user.currency });
+    res.json(serializeUser(user));
   } catch (error) {
     res.status(500).json({ message: "Unable to fetch profile" });
   }
@@ -117,7 +134,43 @@ router.patch("/me", requireAuth, async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.json({ email: user.email, currency: user.currency });
+    res.json(serializeUser(user));
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+router.patch("/me/budgets", requireAuth, async (req, res) => {
+  const { overallBudget, categoryBudgets } = req.body;
+
+  if (overallBudget !== undefined && (typeof overallBudget !== "number" || overallBudget < 0)) {
+    return res.status(400).json({ message: "overallBudget must be a non-negative number" });
+  }
+
+  if (categoryBudgets !== undefined) {
+    if (typeof categoryBudgets !== "object" || categoryBudgets === null) {
+      return res.status(400).json({ message: "categoryBudgets must be an object" });
+    }
+    for (const value of Object.values(categoryBudgets)) {
+      if (typeof value !== "number" || value < 0) {
+        return res.status(400).json({ message: "Each category budget must be a non-negative number" });
+      }
+    }
+  }
+
+  try {
+    const update = {};
+    if (overallBudget !== undefined) update.overallBudget = overallBudget;
+    if (categoryBudgets !== undefined) update.categoryBudgets = categoryBudgets;
+
+    const user = await User.findByIdAndUpdate(req.userId, update, {
+      new: true,
+      runValidators: true,
+    });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(serializeUser(user));
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
