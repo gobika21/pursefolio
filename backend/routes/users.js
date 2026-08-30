@@ -1,11 +1,20 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const rateLimit = require("express-rate-limit");
 const User = require("../models/User");
 const requireAuth = require("../middleware/auth");
 const CURRENCIES = require("../lib/currencies");
 
 const router = express.Router();
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many attempts, please try again later" },
+});
 
 function issueToken(user) {
   return jwt.sign({ userId: user._id, email: user.email }, process.env.JWT_SECRET, {
@@ -13,7 +22,7 @@ function issueToken(user) {
   });
 }
 
-router.post("/register", async (req, res) => {
+router.post("/register", authLimiter, async (req, res) => {
   try {
     const email = req.body.email?.trim().toLowerCase();
     const { password, currency } = req.body;
@@ -64,7 +73,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
-router.post("/login", async (req, res) => {
+router.post("/login", authLimiter, async (req, res) => {
   try {
     const email = req.body.email?.trim().toLowerCase();
     const { password } = req.body;

@@ -1,3 +1,6 @@
+// Keep this list in sync with frontend/app/lib/currency.ts (CURRENCIES) —
+// duplicated because the frontend list also carries display metadata
+// (country/name) that this backend validation list doesn't need.
 const CURRENCIES = [
   "USD",
   "EUR",
