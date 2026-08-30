@@ -1,3 +1,22 @@
+export const CATEGORIES = [
+  "Food & Dining",
+  "Transport",
+  "Shopping",
+  "Bills & Utilities",
+  "Entertainment",
+  "Income",
+  "Others",
+] as const;
+
+export const BUDGET_CATEGORIES = [
+  "Food & Dining",
+  "Transport",
+  "Shopping",
+  "Bills & Utilities",
+  "Entertainment",
+  "Others",
+] as const;
+
 export const CATEGORY_COLORS: Record<string, string> = {
   "Food & Dining": "#e8934a",
   Transport: "#1b2340",

@@ -1,3 +1,6 @@
+// Keep this list in sync with backend/lib/currencies.js (CURRENCIES) —
+// duplicated because that list is server-side validation only and
+// doesn't need the display metadata (country/name) kept here.
 export const CURRENCIES = [
   { code: "USD", country: "United States", name: "US Dollar" },
   { code: "EUR", country: "Eurozone", name: "Euro" },
@@ -55,4 +58,19 @@ export function labelForCurrency(currency: string): string {
   const entry = CURRENCIES.find((c) => c.code === currency);
   if (!entry) return currency;
   return `${entry.code} (${symbolForCurrency(entry.code)}) — ${entry.name}, ${entry.country}`;
+}
+
+const CURRENCY_STORAGE_KEY = "expenso_currency";
+
+export function getStoredCurrency(): CurrencyCode | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(CURRENCY_STORAGE_KEY) as CurrencyCode | null;
+}
+
+export function setStoredCurrency(currency: CurrencyCode) {
+  localStorage.setItem(CURRENCY_STORAGE_KEY, currency);
+}
+
+export function clearStoredCurrency() {
+  localStorage.removeItem(CURRENCY_STORAGE_KEY);
 }

@@ -1,24 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { fetchTransactions, Transaction } from "../lib/api";
+import { fetchTransactions, fetchProfile, patchBudgets, Transaction } from "../lib/api";
 import { useCurrency } from "../lib/currency-context";
-import { getToken } from "../../lib/auth";
 import CategoryIcon from "../components/CategoryIcon";
-
-const BUDGET_CATEGORIES = [
-  "Food & Dining",
-  "Transport",
-  "Shopping",
-  "Bills & Utilities",
-  "Entertainment",
-  "Others",
-];
-
-function authHeaders(): HeadersInit {
-  const token = getToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
+import { BUDGET_CATEGORIES } from "../lib/categories";
 
 export default function BudgetsPage() {
   const { format, currency } = useCurrency();
@@ -33,39 +19,44 @@ export default function BudgetsPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    Promise.all([
-      fetchTransactions(),
-      fetch("/api/users/me", { headers: authHeaders() }).then((res) =>
-        res.ok ? res.json() : null,
-      ),
-    ])
+    Promise.all([fetchTransactions(), fetchProfile()])
       .then(([txns, profile]) => {
         setTransactions(txns);
-        if (profile) {
-          setOverallBudget(profile.overallBudget || 0);
-          setCategoryBudgets(profile.categoryBudgets || {});
-        }
+        setOverallBudget(profile.overallBudget || 0);
+        setCategoryBudgets(profile.categoryBudgets || {});
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
 
+  // Only count spending for the current calendar month
+  const thisMonthTransactions = useMemo(() => {
+    const now = new Date();
+    return transactions.filter((t) => {
+      const d = new Date(t.date);
+      return (
+        d.getMonth() === now.getMonth() &&
+        d.getFullYear() === now.getFullYear()
+      );
+    });
+  }, [transactions]);
+
   const spendByCategory = useMemo(() => {
     const totals = new Map<string, number>();
-    for (const t of transactions) {
+    for (const t of thisMonthTransactions) {
       if (t.type !== "expense") continue;
       const category = t.category?.trim() || "Others";
       totals.set(category, (totals.get(category) || 0) + t.amount);
     }
     return totals;
-  }, [transactions]);
+  }, [thisMonthTransactions]);
 
   const totalSpent = useMemo(
     () =>
-      transactions
+      thisMonthTransactions
         .filter((t) => t.type === "expense")
         .reduce((sum, t) => sum + t.amount, 0),
-    [transactions],
+    [thisMonthTransactions],
   );
 
   const budgets = BUDGET_CATEGORIES.map((category) => ({
@@ -88,13 +79,7 @@ export default function BudgetsPage() {
     setSaving(true);
     setError("");
     try {
-      const res = await fetch("/api/users/me/budgets", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", ...authHeaders() },
-        body: JSON.stringify(next),
-      });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.message || "Unable to save budget");
+      const result = await patchBudgets(next);
       setOverallBudget(result.overallBudget || 0);
       setCategoryBudgets(result.categoryBudgets || {});
     } catch (err) {
@@ -130,12 +115,17 @@ export default function BudgetsPage() {
     setDraftValue("");
   }
 
+  const monthLabel = new Date().toLocaleString("default", {
+    month: "long",
+    year: "numeric",
+  });
+
   return (
     <div className="mx-auto max-w-2xl">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Budgets</h1>
         <p className="text-sm text-gray-500">
-          Manage your budgets and track spending, in {currency}
+          {monthLabel} spending vs your budgets, in {currency}
         </p>
       </div>
 

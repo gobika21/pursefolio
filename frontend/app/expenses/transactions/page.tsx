@@ -1,16 +1,240 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   deleteTransaction,
   fetchTransactions,
   Transaction,
+  TransactionInput,
   TransactionType,
+  updateTransaction,
 } from "../lib/api";
 import { formatDate } from "../lib/format";
 import { useCurrency } from "../lib/currency-context";
 import CategoryIcon from "../components/CategoryIcon";
 import { useAddTransaction } from "../lib/add-transaction-context";
+import { CATEGORIES } from "../lib/categories";
+
+// ── Edit modal ──────────────────────────────────────────────────────────────
+
+type EditModalProps = {
+  transaction: Transaction;
+  onClose: () => void;
+  onSaved: (updated: Transaction) => void;
+};
+
+function EditModal({ transaction, onClose, onSaved }: EditModalProps) {
+  const [title, setTitle] = useState(transaction.title);
+  const [amount, setAmount] = useState(String(transaction.amount));
+  const [category, setCategory] = useState(transaction.category ?? "");
+  const [type, setType] = useState<TransactionType>(transaction.type);
+  const [paymentMethod, setPaymentMethod] = useState(
+    transaction.paymentMethod ?? "",
+  );
+  const [notes, setNotes] = useState(transaction.notes ?? "");
+  const [date, setDate] = useState(transaction.date.slice(0, 10));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  // ESC to close
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setSaving(true);
+    try {
+      const input: TransactionInput = {
+        title: title.trim(),
+        amount: parseFloat(amount),
+        category: category || undefined,
+        type,
+        paymentMethod: paymentMethod || undefined,
+        notes: notes || undefined,
+        date,
+      };
+      const updated = await updateTransaction(transaction._id, input);
+      onSaved(updated);
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to save");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div
+      ref={overlayRef}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={(e) => {
+        if (e.target === overlayRef.current) onClose();
+      }}
+    >
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-gray-900">Edit Transaction</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Type */}
+          <div className="flex gap-2">
+            {(["expense", "income"] as TransactionType[]).map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setType(t)}
+                className={`flex-1 rounded-lg py-2 text-sm font-semibold capitalize transition ${
+                  type === t
+                    ? t === "expense"
+                      ? "bg-red-500 text-white"
+                      : "bg-green-500 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+
+          {/* Title */}
+          <div>
+            <label className="mb-1 block text-xs font-medium text-gray-600">
+              Title
+            </label>
+            <input
+              type="text"
+              required
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+          </div>
+
+          {/* Amount + Date side by side */}
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <label className="mb-1 block text-xs font-medium text-gray-600">
+                Amount
+              </label>
+              <input
+                type="number"
+                required
+                min="0.01"
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="mb-1 block text-xs font-medium text-gray-600">
+                Date
+              </label>
+              <input
+                type="date"
+                required
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+            </div>
+          </div>
+
+          {/* Category */}
+          <div>
+            <label className="mb-1 block text-xs font-medium text-gray-600">
+              Category
+            </label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+            >
+              <option value="">Select category</option>
+              {CATEGORIES.filter((c) =>
+                type === "income" ? c === "Income" : c !== "Income",
+              ).map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Payment method */}
+          <div>
+            <label className="mb-1 block text-xs font-medium text-gray-600">
+              Payment method
+            </label>
+            <select
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+            >
+              <option value="">Select method</option>
+              {["Cash", "Credit Card", "Debit Card", "UPI", "Bank Transfer", "Other"].map(
+                (m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ),
+              )}
+            </select>
+          </div>
+
+          {/* Notes */}
+          <div>
+            <label className="mb-1 block text-xs font-medium text-gray-600">
+              Notes (optional)
+            </label>
+            <textarea
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+          </div>
+
+          {error && <p className="text-xs text-red-600">{error}</p>}
+
+          <div className="flex gap-3 pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 rounded-lg border border-gray-200 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex-1 rounded-lg bg-accent py-2 text-sm font-semibold text-white hover:bg-accent-dark disabled:opacity-60"
+            >
+              {saving ? "Saving…" : "Save changes"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ── Page ────────────────────────────────────────────────────────────────────
 
 export default function TransactionsPage() {
   const { format } = useCurrency();
@@ -20,6 +244,7 @@ export default function TransactionsPage() {
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | TransactionType>("all");
+  const [editTarget, setEditTarget] = useState<Transaction | null>(null);
 
   function load() {
     setLoading(true);
@@ -56,8 +281,22 @@ export default function TransactionsPage() {
     }
   }
 
+  function handleSaved(updated: Transaction) {
+    setTransactions((prev) =>
+      prev.map((t) => (t._id === updated._id ? updated : t)),
+    );
+  }
+
   return (
     <div>
+      {editTarget && (
+        <EditModal
+          transaction={editTarget}
+          onClose={() => setEditTarget(null)}
+          onSaved={handleSaved}
+        />
+      )}
+
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
@@ -163,12 +402,20 @@ export default function TransactionsPage() {
                     {format(t.amount)}
                   </td>
                   <td className="px-5 py-3 text-right">
-                    <button
-                      onClick={() => handleDelete(t._id)}
-                      className="text-xs font-semibold text-red-600 hover:underline"
-                    >
-                      Delete
-                    </button>
+                    <div className="flex items-center justify-end gap-3">
+                      <button
+                        onClick={() => setEditTarget(t)}
+                        className="text-xs font-semibold text-accent hover:underline"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(t._id)}
+                        className="text-xs font-semibold text-red-600 hover:underline"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

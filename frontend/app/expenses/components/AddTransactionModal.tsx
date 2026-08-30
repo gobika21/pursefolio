@@ -5,16 +5,7 @@ import { createTransaction, TransactionType } from "../lib/api";
 import { useCurrency } from "../lib/currency-context";
 import { symbolForCurrency } from "../../lib/currency";
 import { useAddTransaction } from "../lib/add-transaction-context";
-
-const CATEGORIES = [
-  "Food & Dining",
-  "Transport",
-  "Shopping",
-  "Bills & Utilities",
-  "Entertainment",
-  "Income",
-  "Others",
-];
+import { CATEGORIES } from "../lib/categories";
 
 const PAYMENT_METHODS = ["UPI", "Credit Card", "Debit Card", "Bank Transfer", "Cash"];
 

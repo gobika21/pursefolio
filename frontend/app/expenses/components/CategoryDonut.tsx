@@ -40,14 +40,22 @@ export default function CategoryDonut({ data, format }: CategoryDonutProps) {
           offset += length;
           return circle;
         })}
-        <text x={CENTER} y={CENTER - 6} textAnchor="middle" className="fill-gray-500 text-xs">
+        <text
+          x={CENTER}
+          y={CENTER - 6}
+          textAnchor="middle"
+          fill="#6b7280"
+          fontSize={12}
+        >
           Total spent
         </text>
         <text
           x={CENTER}
           y={CENTER + 16}
           textAnchor="middle"
-          className="fill-gray-900 text-base font-bold"
+          fill="#111827"
+          fontSize={15}
+          fontWeight={700}
         >
           {format(total)}
         </text>

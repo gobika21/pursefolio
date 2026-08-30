@@ -9,6 +9,7 @@ import { formatDate } from "../lib/format";
 import { colorForCategory } from "../lib/categories";
 import { useCurrency } from "../lib/currency-context";
 import { useAddTransaction } from "../lib/add-transaction-context";
+import { getEmail } from "../../lib/auth";
 
 export default function DashboardPage() {
   const { format } = useCurrency();
@@ -16,6 +17,12 @@ export default function DashboardPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [displayName, setDisplayName] = useState("there");
+
+  useEffect(() => {
+    const email = getEmail();
+    if (email) setDisplayName(email.split("@")[0]);
+  }, []);
 
   useEffect(() => {
     fetchTransactions()
@@ -59,7 +66,7 @@ export default function DashboardPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Good day, Gobika 👋
+            Good day, {displayName} 👋
           </h1>
           <p className="text-sm text-gray-500">
             Here&apos;s your financial overview

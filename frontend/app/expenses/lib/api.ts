@@ -25,7 +25,14 @@ export type TransactionInput = {
   date: string;
 };
 
-function authHeaders(): HeadersInit {
+export type UserProfile = {
+  email: string;
+  currency: string;
+  overallBudget: number;
+  categoryBudgets: Record<string, number>;
+};
+
+export function authHeaders(): HeadersInit {
   const token = getToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
@@ -67,6 +74,23 @@ export async function createTransaction(
   return result;
 }
 
+export async function updateTransaction(
+  id: string,
+  input: TransactionInput,
+): Promise<Transaction> {
+  const res = await fetch(`/api/expenses/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify(input),
+  });
+  const result = await res.json();
+  if (!res.ok) {
+    handleUnauthorized(res.status);
+    throw new Error(result.message || "Unable to update transaction");
+  }
+  return result;
+}
+
 export async function deleteTransaction(id: string): Promise<void> {
   const res = await fetch(`/api/expenses/${id}`, {
     method: "DELETE",
@@ -76,4 +100,30 @@ export async function deleteTransaction(id: string): Promise<void> {
     handleUnauthorized(res.status);
     throw new Error("Unable to delete transaction");
   }
+}
+
+export async function fetchProfile(): Promise<UserProfile> {
+  const res = await fetch("/api/users/me", { headers: authHeaders() });
+  if (!res.ok) {
+    handleUnauthorized(res.status);
+    throw new Error("Unable to load profile");
+  }
+  return res.json();
+}
+
+export async function patchBudgets(payload: {
+  overallBudget?: number;
+  categoryBudgets?: Record<string, number>;
+}): Promise<UserProfile> {
+  const res = await fetch("/api/users/me/budgets", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify(payload),
+  });
+  const result = await res.json();
+  if (!res.ok) {
+    handleUnauthorized(res.status);
+    throw new Error(result.message || "Unable to save budget");
+  }
+  return result;
 }

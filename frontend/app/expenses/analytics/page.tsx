@@ -5,12 +5,10 @@ import StatCard from "../components/StatCard";
 import { fetchTransactions, Transaction } from "../lib/api";
 import { useCurrency } from "../lib/currency-context";
 import { bucketKey, bucketKeysInRange, modeForRange, recentBucketKeys } from "../lib/trend";
-import TrendChart from "../components/TrendChart";
 import AreaTrendChart from "../components/AreaTrendChart";
 import CategoryDonut from "../components/CategoryDonut";
 
 type Period = "weekly" | "monthly" | "yearly" | "custom";
-type ChartStyle = "bars" | "area";
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
@@ -21,7 +19,6 @@ export default function AnalyticsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<Period>("monthly");
-  const [chartStyle, setChartStyle] = useState<ChartStyle>("bars");
   const [rangeStart, setRangeStart] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() - 30);
@@ -122,37 +119,20 @@ export default function AnalyticsPage() {
             <h2 className="font-semibold text-gray-900">
               Income vs Expenses Trend
             </h2>
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex gap-1 rounded-lg bg-gray-100 p-1">
-                {(["bars", "area"] as const).map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => setChartStyle(option)}
-                    className={`rounded-md px-3 py-1 text-xs font-semibold capitalize ${
-                      chartStyle === option
-                        ? "bg-navy text-white"
-                        : "text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-              <div className="flex gap-1 rounded-lg bg-gray-100 p-1">
-                {(["weekly", "monthly", "yearly", "custom"] as const).map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => setPeriod(option)}
-                    className={`rounded-md px-3 py-1 text-xs font-semibold capitalize ${
-                      period === option
-                        ? "bg-accent text-white"
-                        : "text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
+            <div className="flex gap-1 rounded-lg bg-gray-100 p-1">
+              {(["weekly", "monthly", "yearly", "custom"] as const).map((option) => (
+                <button
+                  key={option}
+                  onClick={() => setPeriod(option)}
+                  className={`rounded-md px-3 py-1 text-xs font-semibold capitalize ${
+                    period === option
+                      ? "bg-accent text-white"
+                      : "text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -186,8 +166,6 @@ export default function AnalyticsPage() {
             <p className="text-sm text-gray-400">Loading…</p>
           ) : chartData.length === 0 ? (
             <p className="text-sm text-gray-400">No data yet.</p>
-          ) : chartStyle === "bars" ? (
-            <TrendChart data={chartData} mode={mode} format={format} />
           ) : (
             <AreaTrendChart data={chartData} mode={mode} format={format} />
           )}
@@ -198,11 +176,6 @@ export default function AnalyticsPage() {
             <span className="flex items-center gap-1">
               <span className="h-2 w-2 rounded-full bg-[#e85d4e]" /> Expenses
             </span>
-            {chartStyle === "bars" && (
-              <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-navy" /> Net savings
-              </span>
-            )}
           </div>
         </div>
 

@@ -10,8 +10,9 @@ import {
   useState,
 } from "react";
 import { CurrencyCode } from "../../lib/currency";
-import { getStoredCurrency, getToken, setStoredCurrency } from "../../lib/auth";
+import { getStoredCurrency, setStoredCurrency } from "../../lib/currency";
 import { formatCurrency } from "./format";
+import { authHeaders, fetchProfile } from "./api";
 
 type CurrencyContextValue = {
   currency: CurrencyCode;
@@ -29,15 +30,11 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) return;
-
-    fetch("/api/users/me", { headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => (res.ok ? res.json() : null))
+    fetchProfile()
       .then((data) => {
         if (data?.currency) {
-          setCurrencyState(data.currency);
-          setStoredCurrency(data.currency);
+          setCurrencyState(data.currency as CurrencyCode);
+          setStoredCurrency(data.currency as CurrencyCode);
         }
       })
       .catch(() => {});
@@ -46,13 +43,9 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   const setCurrency = useCallback(async (next: CurrencyCode) => {
     setSaving(true);
     try {
-      const token = getToken();
       const res = await fetch("/api/users/me", {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify({ currency: next }),
       });
       if (!res.ok) throw new Error("Unable to update currency");

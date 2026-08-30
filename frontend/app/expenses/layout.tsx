@@ -2,6 +2,7 @@ import AuthGuard from "./components/AuthGuard";
 import Sidebar from "./components/Sidebar";
 import Topbar from "./components/Topbar";
 import AddTransactionModal from "./components/AddTransactionModal";
+import Toast from "./components/Toast";
 import { CurrencyProvider } from "./lib/currency-context";
 import { AddTransactionProvider } from "./lib/add-transaction-context";
 
@@ -18,6 +19,7 @@ export default function ExpensesLayout({ children }: LayoutProps<"/">) {
             </div>
           </div>
           <AddTransactionModal />
+          <Toast />
         </AddTransactionProvider>
       </CurrencyProvider>
     </AuthGuard>
